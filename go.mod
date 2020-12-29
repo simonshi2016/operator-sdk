@@ -22,6 +22,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.6.1
+ 	github.ibm.com/privatecloud/cp4d-ansible-operator-lib v0.0.0-00010101000000-000000000000
 	golang.org/x/tools v0.0.0-20201014231627-1610a49f37af
 	gomodules.xyz/jsonpatch/v3 v3.0.1
 	helm.sh/helm/v3 v3.4.1
@@ -46,6 +47,7 @@ replace (
 	// one of our direct dependencies begins using containerd v1.4.0+
 	github.com/containerd/containerd => github.com/containerd/containerd v1.4.3
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.10.0
+ 	github.ibm.com/privatecloud/cp4d-ansible-operator-lib => ../github.ibm.com/privatecloud/cp4d-ansible-operator-lib
 	golang.org/x/text => golang.org/x/text v0.3.3 // Required to fix CVE-2020-14040
 )
 

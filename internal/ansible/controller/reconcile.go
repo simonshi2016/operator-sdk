@@ -172,18 +172,18 @@ func (r *AnsibleOperatorReconciler) Reconcile(ctx context.Context, request recon
 	failureMessages := eventapi.FailureMessages{}
 	for event := range result.Events() {
 		for _, eHandler := range r.EventHandlers {
-			go eHandler.Handle(ident, u, event)
+			go eHandler.Handle(ident, u, event, request)
 		}
 		if event.Event == eventapi.EventPlaybookOnStats {
 			// convert to StatusJobEvent; would love a better way to do this
 			data, err := json.Marshal(event)
 			if err != nil {
-				printEventStats(statusEvent)
+				printEventStats(statusEvent, request)
 				return reconcile.Result{}, err
 			}
 			err = json.Unmarshal(data, &statusEvent)
 			if err != nil {
-				printEventStats(statusEvent)
+				printEventStats(statusEvent, request)
 				return reconcile.Result{}, err
 			}
 		}
@@ -210,7 +210,7 @@ func (r *AnsibleOperatorReconciler) Reconcile(ctx context.Context, request recon
 	}
 
 	// To print the stats of the task
-	printEventStats(statusEvent)
+	printEventStats(statusEvent, request)
 
 	// To print the full ansible result
 	r.printAnsibleResult(result)
@@ -281,7 +281,7 @@ func (r *AnsibleOperatorReconciler) Reconcile(ctx context.Context, request recon
 	return reconcileResult, nil
 }
 
-func printEventStats(statusEvent eventapi.StatusJobEvent) {
+func printEventStats(statusEvent eventapi.StatusJobEvent, request reconcile.Request) {
 	if len(statusEvent.StdOut) > 0 {
 		fmt.Printf("\n--------------------------- Ansible Task Status Event StdOut  -----------------\n")
 		fmt.Println(statusEvent.StdOut)

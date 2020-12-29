@@ -33,6 +33,7 @@ import (
 	"github.com/operator-framework/operator-sdk/internal/ansible/runner/eventapi"
 	"github.com/operator-framework/operator-sdk/internal/ansible/runner/internal/inputdir"
 	"github.com/operator-framework/operator-sdk/internal/ansible/watches"
+ 	cp4ddep "github.ibm.com/privatecloud/cp4d-ansible-operator-lib/dependencies"
 )
 
 var log = logf.Log.WithName("runner")
@@ -211,6 +212,24 @@ func (r *runner) Run(ident string, u *unstructured.Unstructured, kubeconfig stri
 		},
 		CmdLine: r.ansibleArgs,
 	}
+	
+	//////////////////
+	// We have to resolve the dependencies before the ansible playbook run.
+	objKey := escapeAnsibleKey(fmt.Sprintf("_%v_%v", r.GVK.Group, strings.ToLower(r.GVK.Kind)))
+	specKey := fmt.Sprintf("%s_spec", objKey)
+	spec := inputDir.Parameters[specKey].(map[string]interface{})
+	info := cp4ddep.RunnerInfo{
+		RequestName:      u.GetName(),
+		RequestNamespace: u.GetNamespace(),
+		AnsibleRolePath:  r.Path,
+		GVK:              r.GVK,
+		IsFinalizerRun:   r.isFinalizerRun(u),
+	}
+	if err := cp4ddep.InjectionDetails(&inputDir.Parameters, spec, info); err != nil {
+		// TODO update CR status show that the exact error
+		return nil, err
+	}
+
 	// If Path is a dir, assume it is a role path. Otherwise assume it's a
 	// playbook path
 	fi, err := os.Lstat(r.Path)
